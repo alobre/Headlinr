@@ -1,38 +1,40 @@
-﻿using System.Net;
-using Headlinr_System2.Services.Rss;
+﻿using Headlinr_System2.Services.Rss;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Headlinr_System2.Controllers;
-
 [ApiController]
-[Route("[controller]")]
-public class GetNewsController(RssService service) : ControllerBase
+[Route("api/[controller]")]
+public class NewsController : ControllerBase
 {
-    [HttpGet( template:"GetAllNews",Name = "GetNews")]
-    [Produces("application/json")]                            
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    private readonly RssService _service;
+
+    public NewsController(RssService service)
+        => _service = service;
+
+    [HttpGet("GetAllNews", Name = "GetNews")]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(IEnumerable<Item>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllNewsAsync()
     {
-        var result = await service.GetAllRssAsync();
-        if (string.IsNullOrEmpty(result))
+        try
         {
-            return StatusCode((int)HttpStatusCode.InternalServerError);
+            var items = await _service.GetAllRssAsync();
+            return Ok(items);
         }
-        return Ok(result);
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
-    [HttpGet(template: "GetNewsById", Name = "GetNewsById")]
+    [HttpGet("GetNewsById/{id}")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetNewsByIdAsync(string id)
+    [ProducesResponseType(typeof(Item), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetByIdAsync(string id)
     {
-        var result = await service.GetByIdAsync(id);
-        if (string.IsNullOrEmpty(result))
-        {
-            return StatusCode((int)HttpStatusCode.BadRequest);
-        }
-        return Ok(result);
+        var item = await _service.GetByIdAsync(id);
+        if (item == null) return NotFound();
+        return Ok(item);
     }
 }
