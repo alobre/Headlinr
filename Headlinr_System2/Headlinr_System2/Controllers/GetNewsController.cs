@@ -1,13 +1,15 @@
-﻿using Headlinr_System2.Services.Rss;
+﻿using Headlinr_System2.Services;
 using Microsoft.AspNetCore.Mvc;
+
+namespace Headlinr_System2.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class NewsController : ControllerBase
 {
-    private readonly RssService _service;
+    private readonly JsonNewsFeedService _service;
 
-    public NewsController(RssService service)
+    public NewsController(JsonNewsFeedService service)
         => _service = service;
 
     [HttpGet("GetAllNews", Name = "GetNews")]
@@ -34,7 +36,8 @@ public class NewsController : ControllerBase
     public async Task<IActionResult> GetByIdAsync(string id)
     {
         var item = await _service.GetByIdAsync(id);
-        if (item == null) return NotFound();
+        if (item == null) 
+            return NotFound();
         return Ok(item);
     }
 }
