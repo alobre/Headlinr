@@ -43,13 +43,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseCors();
 app.UseEndpoints(endpoints =>
 {
     endpoints.UseSoapEndpoint<SoapNewsFeedService>("/SoapNewsFeedService.asmx", new
         SoapEncoderOptions(), SoapSerializer.XmlSerializer);
     endpoints.MapControllers();
 });
-app.UseCors();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.Run();
